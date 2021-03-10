@@ -1,0 +1,22 @@
+name:                textmate-grammar-sucks
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/githubuser/textmate-grammar-sucks#readme
+license:             BSD3
+author:              LUĀ Tîng-gān
+maintainer:          example@example.com
+copyright:           2021 LUĀ Tîng-gān
+category:            Web
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - aeson
+  - containers
+
+executables:
+  textmate-grammar-sucks:
+    source-dirs:      src
+    main:             Main.hs

@@ -1,0 +1,33 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 18526ed882185db42d15980b643131c9e7c6337ad8ad7afcb8eaa1f7f8441dbb
+
+name:           textmate-grammar-sucks
+version:        0.1.0.0
+category:       Web
+homepage:       https://github.com/githubuser/textmate-grammar-sucks#readme
+author:         LUĀ Tîng-gān
+maintainer:     example@example.com
+copyright:      2021 LUĀ Tîng-gān
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+executable textmate-grammar-sucks
+  main-is: Main.hs
+  other-modules:
+      Grammar
+      Paths_textmate_grammar_sucks
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , containers
+  default-language: Haskell2010
