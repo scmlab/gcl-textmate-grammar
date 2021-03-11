@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 18526ed882185db42d15980b643131c9e7c6337ad8ad7afcb8eaa1f7f8441dbb
+-- hash: 0fb801911e105bcebf283ddbf3fbf059f283e29f0cf9f96923f318824b0f7f92
 
 name:           textmate-grammar-sucks
 version:        0.1.0.0
@@ -29,5 +29,7 @@ executable textmate-grammar-sucks
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
+    , text
   default-language: Haskell2010
