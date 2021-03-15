@@ -4,8 +4,9 @@ module Grammar where
 
 import Data.Aeson
 import Data.Aeson.Types (Pair)
-import Data.Map ( foldrWithKey, Map )
-import Data.Text ( pack, Text )
+import Data.Map (Map, foldrWithKey)
+import qualified Data.Map as Map
+import Data.Text (Text, pack)
 
 -- | Top level structure
 data Grammar = Grammar
@@ -23,7 +24,8 @@ type Repository = Map Text Rule
 
 -- | Rule
 data Rule = Rule
-  { 
+  { -- | Unique ID as key in the repository
+    ruleID :: Text,
     -- | "name"
     ruleName :: Maybe Text,
     -- | "contentName"
@@ -38,16 +40,7 @@ data Rule = Rule
     ruleInclude :: [Reference]
   }
 
-include :: Reference -> Rule
-include ref =
-  Rule
-    { ruleName = Nothing,
-      ruleMatch = Nothing,
-      ruleBegin = Nothing,
-      ruleEnd = Nothing,
-      ruleContentName = Nothing,
-      ruleInclude = [ref]
-    }
+
 
 -- | A capturing group
 data Capture = Capture String (Map Int Text)
@@ -63,16 +56,43 @@ data Reference
 
 --------------------------------------------------------------------------------
 
+-- | Helper functions
+match :: Text -> String -> Text -> Rule
+match i regex name =
+  Rule
+    { ruleID = i,
+      ruleBegin = Nothing,
+      ruleEnd = Nothing,
+      ruleMatch = Just (Capture regex Map.empty),
+      ruleName = Just name,
+      ruleInclude = [],
+      ruleContentName = Nothing
+    }
+
+include :: Text -> Reference -> Rule
+include i ref =
+  Rule
+    { ruleID = i,
+      ruleName = Nothing,
+      ruleMatch = Nothing,
+      ruleBegin = Nothing,
+      ruleEnd = Nothing,
+      ruleContentName = Nothing,
+      ruleInclude = [ref]
+    }
+
+ref :: Rule -> Reference 
+ref = Ref . ruleID
+
+--------------------------------------------------------------------------------
+
 instance ToJSON Grammar where
   toJSON grammar =
     object $
       [ "scopeName" .= grammarScopeName grammar,
         "fileTypes" .= grammarFileTypes grammar,
-        -- "patterns" .= grammarPatterns grammar,
         "repository" .= grammarRepository grammar
       ]
-        -- <> ["patterns" .= grammarPatterns grammar]
-        -- <> ["patterns" .= map (\ref -> ref) (grammarPatterns grammar)]
         <> ["patterns" .= map (\ref -> object ["include" .= ref]) (grammarPatterns grammar)]
         <> "foldingStartMarker" .? grammarFoldingStartMarker grammar
         <> "foldingStopMarker" .? grammarFoldingStopMarker grammar
@@ -86,8 +106,7 @@ instance ToJSON Rule where
         <> end
         <> "name" .? ruleName rule
         <> "contentName" .? ruleContentName rule
-        <> include 
-        
+        <> include
     where
       match = case ruleMatch rule of
         Nothing -> []
