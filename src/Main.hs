@@ -9,7 +9,7 @@ import qualified Data.Map as Map
 import Grammar
 
 main :: IO ()
-main = BS.writeFile "output.tmLanguage.json" (encode grammar)
+main = BS.writeFile "output.tmGrammar.json" (encode grammar)
 
 --------------------------------------------------------------------------------
 
@@ -46,30 +46,27 @@ repository =
         loop,
         conditional,
         assignment,
-        guardedCommands,
-        guardedCommandBar,
-        betweenConditionalCons,
-        others2
+        guardedCommand
       ]
 
 --------------------------------------------------------------------------------
 
 -- | Statements
 skip :: Rule
-skip = match "skip" "\\bskip\\b" "keyword.control.skip"
+skip = match "skip" "skip" "keyword.control.skip"
 
 abort :: Rule
-abort = match "abort" "\\babort\\b" "keyword.control.abort"
+abort = match "abort" "abort" "keyword.control.abort"
 
 loop :: Rule
 loop =
   Rule
     { ruleID = "loop",
-      ruleBegin = Just $ Capture "\\b(do)\\b" $ Map.fromList [(1, "keyword.control.loop")],
-      ruleEnd = Just $ Capture "\\b(od)\\b" $ Map.fromList [(1, "keyword.control.loop")],
+      ruleBegin = capture "do" "keyword.control.loop",
+      ruleEnd = capture "od" "keyword.control.loop",
       ruleMatch = Nothing,
       ruleName = Just "meta.statement.loop",
-      ruleInclude = [ref skip, ref abort, ref conditional, ref assignment],
+      ruleInclude = [ref skip, ref abort, ref conditional, ref assignment, ref guardedCommand],
       ruleContentName = Nothing
     }
 
@@ -77,13 +74,11 @@ conditional :: Rule
 conditional =
   Rule
     { ruleID = "conditional",
-      ruleBegin = Just $ Capture "(if)" $ Map.fromList [(1, "keyword.control.conditional")],
-      ruleEnd = Just $ Capture "(fi)" $ Map.fromList [(1, "keyword.control.conditional")],
+      ruleBegin = capture "if" "keyword.control.conditional",
+      ruleEnd = capture "fi" "keyword.control.conditional",
       ruleMatch = Nothing,
       ruleName = Just "meta.statement.conditional",
-      ruleInclude = [ref betweenConditionalCons],
-      -- ruleInclude = [Ref "guarded-commands"],
-      -- ruleInclude = [Ref "skip", Ref "abort", Ref "conditional", Ref "assignment"],
+      ruleInclude = [ref skip, ref abort, ref conditional, ref assignment, ref guardedCommand],
       ruleContentName = Nothing
     }
 
@@ -93,50 +88,27 @@ assignment =
     { ruleID = "assignment",
       ruleBegin = Nothing,
       ruleEnd = Nothing,
-      ruleMatch = Just $ Capture "aaaaa" $ Map.fromList [(1, "keyword.control.assigment")],
-      ruleName = Just "invalid",
+      ruleMatch = Just $ Capture "(\\:\\=)" $ Map.fromList [
+          (1, "keyword.control.assignment")
+          ],
+      ruleName = Just "meta.statement.assignment",
       ruleInclude = [],
-      ruleContentName = Just "invalid"
+      ruleContentName = Nothing
     }
 
-guardedCommands :: Rule
-guardedCommands =
+guardedCommand :: Rule
+guardedCommand =
   Rule
-    { ruleID = "guarded-commands",
+    { ruleID = "guarded-command",
       ruleBegin = Nothing,
       ruleEnd = Nothing,
-      ruleMatch = Nothing,
-      ruleName = Just "invalid",
-      ruleInclude = [ref guardedCommandBar],
-      ruleContentName = Just "invalid"
-    }
-
-guardedCommandBar :: Rule
-guardedCommandBar = match "guarded-command-bar" "\\|" "punctuation.separator.bar"
-
--- | in between if ... fi
-betweenConditionalCons :: Rule
-betweenConditionalCons =
-  Rule
-    { ruleID = "others",
-      ruleBegin = Just $ Capture "(?<=if)" Map.empty,
-      ruleEnd = Just $ Capture "\\|s|(?=fi)" Map.empty,
-      ruleMatch = Nothing,
-      ruleName = Just "invalid2",
-      ruleInclude = [ref guardedCommands],
-      ruleContentName = Just "invalid2"
-    }
-
-others2 :: Rule
-others2 =
-  Rule
-    { ruleID = "others2",
-      ruleBegin = Nothing,
-      ruleEnd = Nothing,
-      ruleMatch = Just $ Capture "->" Map.empty,
-      ruleName = Just "invalid",
+      ruleMatch = Just $ Capture "(\\-\\>)|(\\|)" $ Map.fromList [
+          (1, "punctuation.section.embedded.arrow"),
+          (2, "punctuation.section.embedded.bar")
+          ],
+      ruleName = Just "meta.statement.guardedCommands",
       ruleInclude = [],
-      ruleContentName = Just "invalid"
+      ruleContentName = Nothing
     }
 
 -- assignment :: Rule

@@ -63,7 +63,7 @@ match i regex name =
     { ruleID = i,
       ruleBegin = Nothing,
       ruleEnd = Nothing,
-      ruleMatch = Just (Capture regex Map.empty),
+      ruleMatch = Just (Capture ("\\b(" <> regex <> ")\\b") Map.empty),
       ruleName = Just name,
       ruleInclude = [],
       ruleContentName = Nothing
@@ -83,6 +83,9 @@ include i ref =
 
 ref :: Rule -> Reference 
 ref = Ref . ruleID
+
+capture :: String -> Text -> Maybe Capture
+capture regex name = Just $ Capture ("\\b(" <> regex <> ")\\b") $ Map.fromList [(1, name)]
 
 --------------------------------------------------------------------------------
 
