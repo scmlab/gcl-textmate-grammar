@@ -31,6 +31,7 @@ patterns =
     ref
     [ skip,
       abort,
+      assertion,
       loop,
       conditional,
       assignment
@@ -43,6 +44,7 @@ repository =
       (\rule -> (ruleID rule, rule))
       [ skip,
         abort,
+        assertion,
         loop,
         conditional,
         assignment,
@@ -58,6 +60,18 @@ skip = match "skip" "skip" "keyword.control.skip"
 abort :: Rule
 abort = match "abort" "abort" "keyword.control.abort"
 
+assertion :: Rule
+assertion =
+  Rule
+    { ruleID = "assertion",
+      ruleBegin = Just $ Capture "\\{" $ Map.fromList [(1, "keyword.control.assertion")],
+      ruleEnd = capture "\\}" "keyword.control.assertion",
+      ruleMatch = Nothing,
+      ruleName = Just "meta.statement.assertion",
+      ruleInclude = [],
+      ruleContentName = Nothing
+    }
+
 loop :: Rule
 loop =
   Rule
@@ -66,7 +80,7 @@ loop =
       ruleEnd = capture "od" "keyword.control.loop",
       ruleMatch = Nothing,
       ruleName = Just "meta.statement.loop",
-      ruleInclude = [ref skip, ref abort, ref conditional, ref assignment, ref guardedCommand],
+      ruleInclude = [ref skip, ref abort, ref assertion, ref conditional, ref assignment, ref guardedCommand],
       ruleContentName = Nothing
     }
 
@@ -78,7 +92,7 @@ conditional =
       ruleEnd = capture "fi" "keyword.control.conditional",
       ruleMatch = Nothing,
       ruleName = Just "meta.statement.conditional",
-      ruleInclude = [ref skip, ref abort, ref conditional, ref assignment, ref guardedCommand],
+      ruleInclude = [ref skip, ref abort, ref assertion, ref conditional, ref assignment, ref guardedCommand],
       ruleContentName = Nothing
     }
 
