@@ -85,7 +85,10 @@ ref :: Rule -> Reference
 ref = Ref . ruleID
 
 capture :: String -> Text -> Maybe Capture
-capture regex name = Just $ Capture ("\\b(" <> regex <> ")\\b") $ Map.fromList [(1, name)]
+capture regex name = Just $ Capture ("(" <> regex <> ")") $ Map.fromList [(1, name)]
+
+captureWord :: String -> Text -> Maybe Capture
+captureWord regex = capture ("\\b" <> regex <> "\\b")
 
 --------------------------------------------------------------------------------
 

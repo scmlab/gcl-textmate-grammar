@@ -21,16 +21,24 @@ grammar =
       grammarFoldingStartMarker = Nothing,
       grammarFoldingStopMarker = Nothing,
       grammarFirstLineMatch = Nothing,
-      grammarPatterns = patterns,
+      grammarPatterns = topLevelPatterns,
       grammarRepository = repository
     }
 
-patterns :: [Reference]
-patterns =
+topLevelPatterns :: [Reference]
+topLevelPatterns =
+  map
+    ref
+    [var, con]
+    <> nestedPatterns
+
+nestedPatterns :: [Reference]
+nestedPatterns =
   map
     ref
     [ skip,
       abort,
+      spec,
       assertion,
       loop,
       conditional,
@@ -44,12 +52,24 @@ repository =
       (\rule -> (ruleID rule, rule))
       [ skip,
         abort,
+        spec,
         assertion,
         loop,
         conditional,
         assignment,
-        guardedCommand
+        guardedCommand,
+        con,
+        var
       ]
+
+--------------------------------------------------------------------------------
+
+-- | Declarations
+con :: Rule
+con = match "con" "con" "keyword.control.con"
+
+var :: Rule
+var = match "var" "var" "keyword.control.var"
 
 --------------------------------------------------------------------------------
 
@@ -60,12 +80,24 @@ skip = match "skip" "skip" "keyword.control.skip"
 abort :: Rule
 abort = match "abort" "abort" "keyword.control.abort"
 
+spec :: Rule
+spec =
+  Rule
+    { ruleID = "spec",
+      ruleBegin = capture "\\{\\!" "punctuation.definition.quote.begin.markdown.gcl.spec.open",
+      ruleEnd = capture "\\!\\}" "punctuation.definition.quote.begin.markdown.gcl.spec.close",
+      ruleMatch = Nothing,
+      ruleName = Just "meta.statement.spec",
+      ruleInclude = [],
+      ruleContentName = Nothing
+    }
+
 assertion :: Rule
 assertion =
   Rule
     { ruleID = "assertion",
-      ruleBegin = Just $ Capture "\\{" $ Map.fromList [(1, "keyword.control.assertion")],
-      ruleEnd = capture "\\}" "keyword.control.assertion",
+      ruleBegin = capture "\\{" "support.other.parenthesis.regexp.gcl.assertion.open",
+      ruleEnd = capture "\\}" "support.other.parenthesis.regexp.gcl.assertion.close",
       ruleMatch = Nothing,
       ruleName = Just "meta.statement.assertion",
       ruleInclude = [],
@@ -76,11 +108,11 @@ loop :: Rule
 loop =
   Rule
     { ruleID = "loop",
-      ruleBegin = capture "do" "keyword.control.loop",
-      ruleEnd = capture "od" "keyword.control.loop",
+      ruleBegin = captureWord "do" "keyword.control.loop",
+      ruleEnd = captureWord "od" "keyword.control.loop",
       ruleMatch = Nothing,
       ruleName = Just "meta.statement.loop",
-      ruleInclude = [ref skip, ref abort, ref assertion, ref conditional, ref assignment, ref guardedCommand],
+      ruleInclude = ref guardedCommand : nestedPatterns,
       ruleContentName = Nothing
     }
 
@@ -88,11 +120,11 @@ conditional :: Rule
 conditional =
   Rule
     { ruleID = "conditional",
-      ruleBegin = capture "if" "keyword.control.conditional",
-      ruleEnd = capture "fi" "keyword.control.conditional",
+      ruleBegin = captureWord "if" "keyword.control.conditional",
+      ruleEnd = captureWord "fi" "keyword.control.conditional",
       ruleMatch = Nothing,
       ruleName = Just "meta.statement.conditional",
-      ruleInclude = [ref skip, ref abort, ref assertion, ref conditional, ref assignment, ref guardedCommand],
+      ruleInclude = ref guardedCommand : nestedPatterns,
       ruleContentName = Nothing
     }
 
@@ -102,9 +134,12 @@ assignment =
     { ruleID = "assignment",
       ruleBegin = Nothing,
       ruleEnd = Nothing,
-      ruleMatch = Just $ Capture "(\\:\\=)" $ Map.fromList [
-          (1, "keyword.control.assignment")
-          ],
+      ruleMatch =
+        Just $
+          Capture "(\\:\\=)" $
+            Map.fromList
+              [ (1, "keyword.control.assignment")
+              ],
       ruleName = Just "meta.statement.assignment",
       ruleInclude = [],
       ruleContentName = Nothing
@@ -116,10 +151,13 @@ guardedCommand =
     { ruleID = "guarded-command",
       ruleBegin = Nothing,
       ruleEnd = Nothing,
-      ruleMatch = Just $ Capture "(\\-\\>)|(\\|)" $ Map.fromList [
-          (1, "punctuation.section.embedded.arrow"),
-          (2, "punctuation.section.embedded.bar")
-          ],
+      ruleMatch =
+        Just $
+          Capture "(\\-\\>)|(\\|)" $
+            Map.fromList
+              [ (1, "punctuation.section.embedded.arrow"),
+                (2, "punctuation.section.embedded.bar")
+              ],
       ruleName = Just "meta.statement.guardedCommands",
       ruleInclude = [],
       ruleContentName = Nothing
