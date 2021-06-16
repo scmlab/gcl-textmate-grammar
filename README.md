@@ -1,1 +1,3 @@
-# textmate-grammar-sucks
+# Textmate grammar generator for Guabao
+
+

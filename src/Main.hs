@@ -25,13 +25,15 @@ grammar =
       grammarRepository = repository
     }
 
+-- | Only allowed in the top-most level
 topLevelPatterns :: [Reference]
 topLevelPatterns =
   map
     ref
-    [var, con]
+    [var, con, let']
     <> nestedPatterns
 
+-- | Can appear in anywhere
 nestedPatterns :: [Reference]
 nestedPatterns =
   map
@@ -59,7 +61,8 @@ repository =
         assignment,
         guardedCommand,
         con,
-        var
+        var,
+        let'
       ]
 
 --------------------------------------------------------------------------------
@@ -70,6 +73,9 @@ con = match "con" "con" "keyword.control.con"
 
 var :: Rule
 var = match "var" "var" "keyword.control.var"
+
+let' :: Rule
+let' = match "let" "let" "keyword.control.let"
 
 --------------------------------------------------------------------------------
 
