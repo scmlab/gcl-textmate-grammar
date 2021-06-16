@@ -44,7 +44,8 @@ nestedPatterns =
       assertion,
       loop,
       conditional,
-      assignment
+      assignment,
+      comment
     ]
 
 repository :: Repository
@@ -52,7 +53,9 @@ repository =
   Map.fromList $
     map
       (\rule -> (ruleID rule, rule))
-      [ skip,
+      [ 
+        -- statements 
+        skip,
         abort,
         spec,
         assertion,
@@ -60,6 +63,9 @@ repository =
         conditional,
         assignment,
         guardedCommand,
+        -- comment
+        comment,
+        -- declarations 
         con,
         var,
         let'
@@ -76,6 +82,26 @@ var = match "var" "var" "keyword.control.var"
 
 let' :: Rule
 let' = match "let" "let" "keyword.control.let"
+
+--------------------------------------------------------------------------------
+
+-- | Comment
+comment :: Rule
+comment = 
+  Rule
+    { ruleID = "comment",
+      ruleBegin = Nothing,
+      ruleEnd = Nothing,
+      ruleMatch =
+        Just $
+          Capture "(\\-\\-.*$)" $
+            Map.fromList
+              [ (1, "comment.line.double-dash")
+              ],
+      ruleName = Just "metea.comment.line",
+      ruleInclude = [],
+      ruleContentName = Nothing
+    }
 
 --------------------------------------------------------------------------------
 
