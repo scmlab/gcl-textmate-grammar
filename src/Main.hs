@@ -45,17 +45,16 @@ nestedPatterns =
       loop,
       conditional,
       assignment,
-      comment,
-      number
+      comment
     ]
+    ++ values
 
 repository :: Repository
 repository =
   Map.fromList $
     map
       (\rule -> (ruleID rule, rule))
-      [
-        -- statements 
+      [ -- statements
         skip,
         abort,
         spec,
@@ -66,26 +65,24 @@ repository =
         guardedCommand,
         -- comment
         comment,
-        -- declarations 
+        -- declarations
         con,
         var,
         let',
-
-        -- values & expressions  
+        -- values & expressions
         number,
-
-        -- types  
-        int,
-        bool
-
+        bool,
+        -- types
+        intType,
+        boolType
       ]
 
 --------------------------------------------------------------------------------
 
 -- | Declarations
-
 con :: Rule
-con = Rule
+con =
+  Rule
     { ruleID = "con",
       ruleBegin = captureWord "con" "keyword.control.con",
       ruleEnd = Just $ Capture "\\n" Map.empty,
@@ -96,7 +93,8 @@ con = Rule
     }
 
 var :: Rule
-var = Rule
+var =
+  Rule
     { ruleID = "var",
       ruleBegin = captureWord "var" "keyword.control.var",
       ruleEnd = Just $ Capture "\\n" Map.empty,
@@ -105,7 +103,6 @@ var = Rule
       ruleInclude = types,
       ruleContentName = Nothing
     }
-
 
 let' :: Rule
 let' = match "let" "let" "keyword.control.let"
@@ -159,7 +156,7 @@ assertion =
       ruleEnd = capture "\\}" "support.other.parenthesis.regexp.gcl.assertion.close",
       ruleMatch = Nothing,
       ruleName = Just "meta.statement.assertion",
-      ruleInclude = [],
+      ruleInclude = values,
       ruleContentName = Nothing
     }
 
@@ -283,7 +280,14 @@ guardedCommand =
 
 --------------------------------------------------------------------------------
 
--- | Expressions & Values 
+-- | Expressions & Values
+values :: [Reference]
+values =
+  map
+    ref
+    [ number,
+      bool
+    ]
 
 number :: Rule
 number =
@@ -297,6 +301,18 @@ number =
       ruleContentName = Nothing
     }
 
+bool :: Rule
+bool =
+  Rule
+    { ruleID = "bool",
+      ruleBegin = Nothing,
+      ruleEnd = Nothing,
+      ruleMatch = Just (Capture "\\b(True|False)\\b" $ Map.fromList [(0, "constant.language")]),
+      ruleName = Just "constant.language",
+      ruleInclude = [],
+      ruleContentName = Nothing
+    }
+
 --------------------------------------------------------------------------------
 
 -- | Types
@@ -306,12 +322,12 @@ types :: [Reference]
 types =
   map
     ref
-    [ int,
-      bool
+    [ intType,
+      boolType
     ]
 
-int :: Rule
-int = match "int" "Int" "storage.type.int"
+intType :: Rule
+intType = match "intType" "Int" "entity.name.type.int"
 
-bool :: Rule
-bool = match "bool" "Bool" "storage.type.bool"
+boolType :: Rule
+boolType = match "boolType" "Bool" "entity.name.type.int"
