@@ -45,7 +45,8 @@ nestedPatterns =
       loop,
       conditional,
       assignment,
-      comment
+      comment,
+      number
     ]
 
 repository :: Repository
@@ -53,7 +54,7 @@ repository =
   Map.fromList $
     map
       (\rule -> (ruleID rule, rule))
-      [ 
+      [
         -- statements 
         skip,
         abort,
@@ -70,9 +71,13 @@ repository =
         var,
         let',
 
+        -- values & expressions  
+        number,
+
         -- types  
         int,
         bool
+
       ]
 
 --------------------------------------------------------------------------------
@@ -109,7 +114,7 @@ let' = match "let" "let" "keyword.control.let"
 
 -- | Comment
 comment :: Rule
-comment = 
+comment =
   Rule
     { ruleID = "comment",
       ruleBegin = Nothing,
@@ -275,6 +280,22 @@ guardedCommand =
 --       ruleInclude = [Ref "built-in-type", Ref "declaration-var-names"],
 --       ruleContentName = Nothing
 --     }
+
+--------------------------------------------------------------------------------
+
+-- | Expressions & Values 
+
+number :: Rule
+number =
+  Rule
+    { ruleID = "number",
+      ruleBegin = Nothing,
+      ruleEnd = Nothing,
+      ruleMatch = Just (Capture "\\b[0-9]+\\b" $ Map.fromList [(0, "constant.numeric")]),
+      ruleName = Just "constant.numeric",
+      ruleInclude = [],
+      ruleContentName = Nothing
+    }
 
 --------------------------------------------------------------------------------
 
