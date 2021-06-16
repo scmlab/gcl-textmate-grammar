@@ -68,17 +68,39 @@ repository =
         -- declarations 
         con,
         var,
-        let'
+        let',
+
+        -- types  
+        int,
+        bool
       ]
 
 --------------------------------------------------------------------------------
 
 -- | Declarations
+
 con :: Rule
-con = match "con" "con" "keyword.control.con"
+con = Rule
+    { ruleID = "con",
+      ruleBegin = captureWord "con" "keyword.control.con",
+      ruleEnd = Just $ Capture "\\n" Map.empty,
+      ruleMatch = Nothing,
+      ruleName = Just "meta.declaration",
+      ruleInclude = types,
+      ruleContentName = Nothing
+    }
 
 var :: Rule
-var = match "var" "var" "keyword.control.var"
+var = Rule
+    { ruleID = "var",
+      ruleBegin = captureWord "var" "keyword.control.var",
+      ruleEnd = Just $ Capture "\\n" Map.empty,
+      ruleMatch = Nothing,
+      ruleName = Just "meta.declaration",
+      ruleInclude = types,
+      ruleContentName = Nothing
+    }
+
 
 let' :: Rule
 let' = match "let" "let" "keyword.control.let"
@@ -98,7 +120,7 @@ comment =
             Map.fromList
               [ (1, "comment.line.double-dash")
               ],
-      ruleName = Just "metea.comment.line",
+      ruleName = Just "meta.comment.line",
       ruleInclude = [],
       ruleContentName = Nothing
     }
@@ -253,3 +275,22 @@ guardedCommand =
 --       ruleInclude = [Ref "built-in-type", Ref "declaration-var-names"],
 --       ruleContentName = Nothing
 --     }
+
+--------------------------------------------------------------------------------
+
+-- | Types
+
+-- | Appears in declarations
+types :: [Reference]
+types =
+  map
+    ref
+    [ int,
+      bool
+    ]
+
+int :: Rule
+int = match "int" "Int" "storage.type.int"
+
+bool :: Rule
+bool = match "bool" "Bool" "storage.type.bool"
